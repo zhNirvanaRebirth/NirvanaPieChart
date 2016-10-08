@@ -13,10 +13,11 @@ import java.util.List;
 /**
  * Created by zhwilson on 2016/9/26.
  * 自定义饼状图
+ *
+ * 这里面有自定义控件时，大小控制的标准做法
  */
 public class NirvanaPieChart extends View {
-    private int width;//控件的宽度
-    private int height;//控件的高度
+    private int defaultSize = 200;
     private Paint piePaint;
     private List<PieData> pieDatas;
     private int startAngle;//开始度数
@@ -37,21 +38,35 @@ public class NirvanaPieChart extends View {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        widthMeasureSpecMode = MeasureSpec.getMode(widthMeasureSpec);
-        heightMeasureSpecMode = MeasureSpec.getMode(heightMeasureSpec);
-        if (widthMeasureSpecMode == MeasureSpec.UNSPECIFIED || heightMeasureSpecMode == MeasureSpec.UNSPECIFIED) {
-            setMeasuredDimension(200, 200);
-            return;
-        }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    protected int getSuggestedMinimumWidth() {//获取最小的宽度
+        return defaultSize;
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        width = w;
-        height = h;
+    protected int getSuggestedMinimumHeight() {//获取最小高度
+        return defaultSize;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(measure(widthMeasureSpec, true), measure(heightMeasureSpec, false));
+    }
+
+    private int measure(int measureSpec, boolean isWidth){
+        int result;
+        int size = MeasureSpec.getSize(measureSpec);
+        int mode = MeasureSpec.getMode(measureSpec);
+        int padding = isWidth ? getPaddingLeft() + getPaddingRight() : getPaddingTop() + getPaddingBottom();
+        if (mode == MeasureSpec.EXACTLY) {
+            result = size;
+        } else {
+            result = isWidth ? getSuggestedMinimumWidth() : getSuggestedMinimumHeight();
+            result += padding;
+            if (mode == MeasureSpec.AT_MOST) {
+                result = Math.min(result, size);
+            }
+        }
+        return result;
     }
 
     private void init() {
@@ -66,7 +81,7 @@ public class NirvanaPieChart extends View {
         canvas.drawColor(Color.YELLOW);
         if (pieDatas == null)
             return;
-        canvas.translate(width/2, height/2);
+//        canvas.translate(width/2, height/2);
         for (int i = 0; i < pieDatas.size(); i++){
 
         }
